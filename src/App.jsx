@@ -172,7 +172,7 @@ function App() {
               <p className="mt-2">{t('disclaimerLine1')}</p>
               <p className="mt-2">
                 {t('disclaimerLine2')}{' '}
-                <span className="font-mono">LICENSE</span>
+                <span className="font-mono text-yellow-500/80">CC BY 4.0</span>
                 {t('disclaimerLine2Suffix')}
               </p>
             </div>
