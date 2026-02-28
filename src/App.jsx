@@ -28,7 +28,8 @@ const ARROWS = {
 const SCREENS = {
   HOME: 'HOME',
   SPECIALIZED_SELECT: 'SPECIALIZED_SELECT',
-  TRAINING: 'TRAINING'
+  TRAINING: 'TRAINING',
+  TREASON: 'TREASON'
 };
 
 const getRating = (ms, length) => {
@@ -63,6 +64,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState(SCREENS.HOME);
   const [trainingMode, setTrainingMode] = useState('random'); // 'random' or 'specialized'
   const [specializedStratagem, setSpecializedStratagem] = useState(null);
+  const [consecutiveErrors, setConsecutiveErrors] = useState(0);
 
   useEffect(() => {
     setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
@@ -124,7 +126,7 @@ function App() {
         setCurrentScreen(SCREENS.HOME);
       }
       setCurrentStratagem(null);
-    } else if (currentScreen === SCREENS.SPECIALIZED_SELECT) {
+    } else if (currentScreen === SCREENS.SPECIALIZED_SELECT || currentScreen === SCREENS.TREASON) {
       setCurrentScreen(SCREENS.HOME);
     }
   }, [currentScreen, trainingMode]);
@@ -152,13 +154,20 @@ function App() {
             ms: duration,
             rating: getRating(duration, currentStratagem.sequence.length)
           });
+          setConsecutiveErrors(0);
         }
       } else {
         setIsError(true);
         setUserInput([]);
+        const newErrorCount = consecutiveErrors + 1;
+        setConsecutiveErrors(newErrorCount);
+        if (newErrorCount >= 5) {
+          setCurrentScreen(SCREENS.TREASON);
+          setConsecutiveErrors(0);
+        }
       }
     }
-  }, [currentStratagem, result, startTime, userInput]);
+  }, [currentStratagem, result, startTime, userInput, consecutiveErrors]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -293,6 +302,26 @@ function App() {
                 {t('disclaimerLine2Suffix')}
               </p>
             </div>
+          </div>
+      ) : currentScreen === SCREENS.TREASON ? (
+          <div className="flex flex-col items-center justify-center text-center animate-in fade-in duration-700 bg-black/40 p-12 backdrop-blur-sm border border-white/10 rounded-sm max-w-3xl">
+            <h1 className="text-4xl sm:text-6xl font-bold mb-8 tracking-wider text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+              {t('treasonTitle')}
+            </h1>
+            <div className="space-y-6 text-xl sm:text-2xl font-medium tracking-wide text-gray-200 uppercase">
+              {t('treasonBody').split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
+              ))}
+            </div>
+            <p className="mt-12 text-lg text-gray-400 italic">
+              {t('treasonThanks')}
+            </p>
+            <button
+                onClick={() => setCurrentScreen(SCREENS.HOME)}
+                className="mt-16 px-10 py-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-black text-xl rounded-sm transition-all uppercase tracking-[0.2em]"
+            >
+              {t('treasonDismiss')}
+            </button>
           </div>
       ) : currentScreen === SCREENS.SPECIALIZED_SELECT ? (
           <div className="w-full max-w-5xl bg-[#1a1b1e] p-8 rounded-sm shadow-2xl border-l-8 border-[#f6ff00]">

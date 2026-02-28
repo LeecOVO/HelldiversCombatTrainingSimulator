@@ -45,6 +45,11 @@ export const MESSAGES = {
     disclaimerLine2:
         '游戏相关名称、商标、Logo、图片等素材的权利归其各自权利人所有。本软件源代码以开源方式提供与分发，使用、修改与再发布需遵循 ',
     disclaimerLine2Suffix: ' 协议。',
+
+    treasonTitle: '超级地球真理部',
+    treasonBody: '请遵守以下爱国服务公告。\n注意力不集中将被视为叛国。',
+    treasonThanks: '感谢您的配合。',
+    treasonDismiss: '为了超级地球！我将全力以赴！',
   },
   en: {
     title: 'STRATAGEM SIMULATION TERMINAL',
@@ -77,6 +82,11 @@ export const MESSAGES = {
     disclaimerLine2:
         'All game-related names, trademarks, logos, and images belong to their respective rights holders. This software is distributed as open source; use, modification, and redistribution must comply with the ',
     disclaimerLine2Suffix: ' license.',
+
+    treasonTitle: 'Super Earth Ministry of Truth',
+    treasonBody: 'Please observe the following Patriotic Service Announcement.\nDeviations in attention will be considered treason.',
+    treasonThanks: 'Thank you for your cooperation.',
+    treasonDismiss: 'FOR SUPER EARTH! I WILL DO MY BEST!',
   },
 };
 
