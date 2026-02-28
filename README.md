@@ -41,6 +41,12 @@
 
 ---
 
+### 🚀 演示地址 (Live Demo)
+*   **GitHub Pages**: [https://leecovo.github.io/HelldiversCombatTrainingSimulator/](https://leecovo.github.io/HelldiversCombatTrainingSimulator/)
+*   **镜像地址 (Mirror)**: [https://helldiverscombattrainingsimulator.orangebook.cn/](https://helldiverscombattrainingsimulator.orangebook.cn/)
+
+---
+
 ### 🚀 如何运行
 1.  确保已安装 [Node.js](https://nodejs.org/)。
 2.  克隆/下载本项目后，在根目录运行：
