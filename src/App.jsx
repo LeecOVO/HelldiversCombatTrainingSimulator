@@ -53,6 +53,11 @@ function App() {
   const [startTime, setStartTime] = useState(null);
   const [result, setResult] = useState(null);
   const [isError, setIsError] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('lang', lang);
@@ -67,6 +72,37 @@ function App() {
     setIsError(false);
   }, []);
 
+  const handleInput = useCallback((key) => {
+    if (!currentStratagem || result) return;
+
+    if (['W', 'S', 'A', 'D'].includes(key)) {
+      let currentStartTime = startTime;
+      if (userInput.length === 0) {
+        currentStartTime = Date.now();
+        setStartTime(currentStartTime);
+      }
+
+      const nextIndex = userInput.length;
+      if (key === currentStratagem.sequence[nextIndex]) {
+        const newUserInput = [...userInput, key];
+        setUserInput(newUserInput);
+        setIsError(false);
+
+        if (newUserInput.length === currentStratagem.sequence.length) {
+          const endTime = Date.now();
+          const duration = endTime - currentStartTime;
+          setResult({
+            ms: duration,
+            rating: getRating(duration, currentStratagem.sequence.length)
+          });
+        }
+      } else {
+        setIsError(true);
+        setUserInput([]);
+      }
+    }
+  }, [currentStratagem, result, startTime, userInput]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       const key = e.key.toUpperCase();
@@ -77,39 +113,12 @@ function App() {
         return;
       }
 
-      if (!currentStratagem || result) return;
-
-      if (['W', 'S', 'A', 'D'].includes(key)) {
-        let currentStartTime = startTime;
-        if (userInput.length === 0) {
-          currentStartTime = Date.now();
-          setStartTime(currentStartTime);
-        }
-
-        const nextIndex = userInput.length;
-        if (key === currentStratagem.sequence[nextIndex]) {
-          const newUserInput = [...userInput, key];
-          setUserInput(newUserInput);
-          setIsError(false);
-
-          if (newUserInput.length === currentStratagem.sequence.length) {
-            const endTime = Date.now();
-            const duration = endTime - currentStartTime;
-            setResult({
-              ms: duration,
-              rating: getRating(duration, currentStratagem.sequence.length)
-            });
-          }
-        } else {
-          setIsError(true);
-          setUserInput([]);
-        }
-      }
+      handleInput(key);
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStratagem, userInput, startTime, result, startNext]);
+  }, [startNext, handleInput]);
 
   return (
       <div
@@ -122,7 +131,7 @@ function App() {
         <div className="absolute inset-0 bg-black/70" aria-hidden="true"/>
 
         <div className="relative z-10 w-full flex flex-col items-center justify-center">
-          <div className="w-full max-w-3xl flex items-center justify-end mb-4">
+          <div className="w-full max-w-3xl flex items-center justify-center sm:justify-end mb-4">
           <label className="text-xs text-gray-400 font-bold tracking-[0.2em] uppercase flex items-center gap-3">
           <span>{t('langLabel')}</span>
           <select
@@ -192,8 +201,8 @@ function App() {
               <span>{t('superEarth')}</span>
             </div>
 
-          <div className="flex items-center mb-12">
-            <div className="w-24 h-24 mr-8 bg-black p-1 border-2 border-yellow-500/30 flex items-center justify-center">
+          <div className="flex items-center mb-12 flex-col sm:flex-row text-center sm:text-left">
+            <div className="w-24 h-24 mb-4 sm:mb-0 sm:mr-8 bg-black p-1 border-2 border-yellow-500/30 flex items-center justify-center">
               <img
                 src={currentStratagem.icon}
                 alt={getStratagemName(currentStratagem)}
@@ -204,20 +213,20 @@ function App() {
               <div className="text-yellow-500 text-sm font-bold tracking-[0.2em] mb-1">
                 {t('stratagemIdentified')}
               </div>
-              <h2 className="text-4xl font-black uppercase tracking-wide leading-none">
+              <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-wide leading-none">
                 {getStratagemName(currentStratagem)}
               </h2>
             </div>
           </div>
 
-          <div className="flex gap-4 justify-center mb-12 bg-black/40 p-10 border border-white/10 rounded-sm">
+          <div className="flex gap-4 justify-center mb-12 bg-black/40 p-4 sm:p-10 border border-white/10 rounded-sm overflow-x-auto w-full">
             {currentStratagem.sequence.map((dir, index) => {
               const isTyped = index < userInput.length;
               const isErrorPos = index === userInput.length && isError;
               return (
                 <div
                   key={index}
-                  className={`w-20 h-20 flex items-center justify-center rounded-sm transition-all duration-75
+                  className={`w-12 h-12 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center rounded-sm transition-all duration-75
                     ${
                       isTyped
                         ? 'text-[#f6ff00] drop-shadow-[0_0_8px_rgba(246,255,0,0.8)]'
@@ -227,11 +236,44 @@ function App() {
                     }
                   `}
                 >
-                  {ARROWS[dir]}
+                  <div className="scale-75 sm:scale-100">
+                    {ARROWS[dir]}
+                  </div>
                 </div>
               );
             })}
           </div>
+
+          {isMobile && !result && (
+            <div className="flex flex-col items-center gap-2 mb-12">
+              <button
+                className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
+                onClick={() => handleInput('W')}
+              >
+                <div className="w-12 h-12 rotate-0">{ARROWS.W}</div>
+              </button>
+              <div className="flex gap-8">
+                <button
+                  className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
+                  onClick={() => handleInput('A')}
+                >
+                  <div className="w-12 h-12">{ARROWS.A}</div>
+                </button>
+                <button
+                  className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
+                  onClick={() => handleInput('S')}
+                >
+                  <div className="w-12 h-12">{ARROWS.S}</div>
+                </button>
+                <button
+                  className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
+                  onClick={() => handleInput('D')}
+                >
+                  <div className="w-12 h-12">{ARROWS.D}</div>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="h-32 flex flex-col items-center justify-center">
             {result ? (
@@ -243,8 +285,13 @@ function App() {
                 <div className="text-4xl text-yellow-500 tracking-widest">
                   {'★'.repeat(result.rating)}{'☆'.repeat(5 - result.rating)}
                 </div>
-                <div className="mt-8 text-yellow-500/50 font-bold animate-pulse uppercase tracking-[0.3em]">
-                  {t('nextReady')}
+                <div className="mt-8">
+                  <button
+                      onClick={startNext}
+                      className="px-8 py-3 bg-[#f6ff00] text-black font-black text-xl rounded-sm hover:bg-[#e6ee00] transition-all uppercase shadow-[0_0_20px_rgba(246,255,0,0.4)]"
+                  >
+                    {t('hintDeployNext')}
+                  </button>
                 </div>
               </div>
             ) : (
@@ -264,7 +311,7 @@ function App() {
       )}
 
           <div
-              className="mt-16 text-xs text-gray-600 font-bold tracking-[0.2em] uppercase flex gap-8 border-t border-gray-800 pt-8">
+              className="mt-16 text-xs text-gray-600 font-bold tracking-[0.2em] uppercase flex flex-col sm:flex-row items-center gap-4 sm:gap-8 border-t border-gray-800 pt-8 text-center sm:text-left">
             <div>
               <span className="text-yellow-700 mr-2">[W S A D]</span> {t('hintSequence')}
             </div>
