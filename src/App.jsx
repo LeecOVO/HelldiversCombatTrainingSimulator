@@ -4,22 +4,22 @@ import { LANGS, detectInitialLang, createT } from './i18n';
 
 const ARROWS = {
   W: (
-    <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
+    <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-12 sm:h-12 fill-current">
       <path d="M12 4l-8 8h5v8h6v-8h5z" />
     </svg>
   ),
   S: (
-    <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
+    <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-12 sm:h-12 fill-current">
       <path d="M12 20l8-8h-5V4H9v8H4z" />
     </svg>
   ),
   A: (
-    <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
+    <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-12 sm:h-12 fill-current">
       <path d="M4 12l8 8v-5h8v-6h-8V4z" />
     </svg>
   ),
   D: (
-    <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
+    <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-12 sm:h-12 fill-current">
       <path d="M20 12l-8-8v5H4v6h8v5z" />
     </svg>
   )
@@ -60,7 +60,12 @@ function App() {
   const [startTime, setStartTime] = useState(null);
   const [result, setResult] = useState(null);
   const [isError, setIsError] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    }
+    return false;
+  });
   const [currentScreen, setCurrentScreen] = useState(SCREENS.HOME);
   const [trainingMode, setTrainingMode] = useState('random'); // 'random' or 'specialized'
   const [specializedStratagem, setSpecializedStratagem] = useState(null);
@@ -379,24 +384,26 @@ function App() {
 
           <div className="flex items-center mb-12 flex-col sm:flex-row text-center sm:text-left">
             <div className="w-24 h-24 mb-4 sm:mb-0 sm:mr-8 bg-black p-1 border-2 border-yellow-500/30 flex items-center justify-center">
-              <img
-                src={currentStratagem.icon}
-                alt={getStratagemName(currentStratagem)}
-                className="max-w-full max-h-full"
-              />
+              {currentStratagem && (
+                <img
+                  src={currentStratagem.icon}
+                  alt={getStratagemName(currentStratagem)}
+                  className="max-w-full max-h-full"
+                />
+              )}
             </div>
             <div>
               <div className="text-yellow-500 text-sm font-bold tracking-[0.2em] mb-1">
                 {t('stratagemIdentified')}
               </div>
               <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-wide leading-none">
-                {getStratagemName(currentStratagem)}
+                {currentStratagem ? getStratagemName(currentStratagem) : '...'}
               </h2>
             </div>
           </div>
 
-          <div className="flex gap-4 justify-center mb-12 bg-black/40 p-4 sm:p-10 border border-white/10 rounded-sm overflow-x-auto w-full">
-            {currentStratagem.sequence.map((dir, index) => {
+          <div className="flex gap-2 sm:gap-4 justify-start sm:justify-center mb-12 bg-black/40 p-4 sm:p-10 border border-white/10 rounded-sm overflow-x-auto w-full custom-scrollbar">
+            {currentStratagem?.sequence.map((dir, index) => {
               const isTyped = index < userInput.length;
               const isErrorPos = index === userInput.length && isError;
               return (
@@ -412,7 +419,7 @@ function App() {
                     }
                   `}
                 >
-                  <div className="scale-75 sm:scale-100">
+                  <div className="flex-shrink-0 scale-90 sm:scale-110">
                     {ARROWS[dir]}
                   </div>
                 </div>
@@ -426,26 +433,26 @@ function App() {
                 className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
                 onClick={() => handleInput('W')}
               >
-                <div className="w-12 h-12 rotate-0">{ARROWS.W}</div>
+                <div className="flex items-center justify-center">{ARROWS.W}</div>
               </button>
               <div className="flex gap-8">
                 <button
                   className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
                   onClick={() => handleInput('A')}
                 >
-                  <div className="w-12 h-12">{ARROWS.A}</div>
+                  <div className="flex items-center justify-center">{ARROWS.A}</div>
                 </button>
                 <button
                   className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
                   onClick={() => handleInput('S')}
                 >
-                  <div className="w-12 h-12">{ARROWS.S}</div>
+                  <div className="flex items-center justify-center">{ARROWS.S}</div>
                 </button>
                 <button
                   className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center active:bg-white/30"
                   onClick={() => handleInput('D')}
                 >
-                  <div className="w-12 h-12">{ARROWS.D}</div>
+                  <div className="flex items-center justify-center">{ARROWS.D}</div>
                 </button>
               </div>
             </div>
@@ -494,6 +501,20 @@ function App() {
             <div>
               <span className="text-yellow-700 mr-2">[SPACE]</span> {t('hintDeployNext')}
             </div>
+          </div>
+
+          <div className="mt-8 flex items-center gap-4 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+            <a
+                href="https://github.com/LeecOVO/HelldiversCombatTrainingSimulator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[#f6ff00] transition-colors flex items-center gap-2 border border-white/10 px-3 py-1.5 rounded-sm bg-black/20"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.416-4.041-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+              GitHub
+            </a>
           </div>
       </div>
     </div>
